@@ -1,4 +1,17 @@
-const API_BASE = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_API_URL) || 'http://localhost:3001/api';
+const getApiBase = (): string => {
+    // 1. Jika VITE_API_URL di-set secara eksplisit, gunakan itu
+    if (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_API_URL) {
+        return (import.meta as any).env.VITE_API_URL;
+    }
+    // 2. Jika berjalan di browser dan bukan localhost, gunakan /api relatif (Vercel production)
+    if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        return '/api';
+    }
+    // 3. Fallback ke localhost untuk development
+    return 'http://localhost:3001/api';
+};
+
+const API_BASE = getApiBase();
 
 const getToken = () => localStorage.getItem('mitramart_token');
 

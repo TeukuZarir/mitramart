@@ -227,14 +227,11 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
           }
         }
       } else {
-        const saved = localStorage.getItem(STORAGE_KEYS.SESSION);
-        if (saved) {
-          try {
-            const user = JSON.parse(saved);
-            setCurrentUser(user);
-            setDefaultViewForRole(user.role);
-          } catch { /* invalid session */ }
-        }
+        // KEAMANAN: Jangan memuat sesi lama dari localStorage tanpa verifikasi server.
+        // Hapus sesi lama agar pengguna harus login ulang saat server kembali tersedia.
+        localStorage.removeItem('mitramart_token');
+        localStorage.removeItem(STORAGE_KEYS.SESSION);
+        setCurrentUser(null);
       }
 
       setIsLoading(false);
@@ -374,13 +371,9 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
     } else {
-      const user = users.find(u => u.email === email);
-      if (user) {
-        setCurrentUser(user);
-        setDefaultViewForRole(user.role);
-        showToast(`Selamat datang, ${user.name}! (Mode Offline)`, 'info');
-        return true;
-      }
+      // KEAMANAN: Mode offline TIDAK boleh mengizinkan login tanpa verifikasi password.
+      // Jika server backend tidak tersambung, login ditolak sepenuhnya.
+      showToast('Server tidak tersedia. Pastikan koneksi internet Anda aktif dan coba lagi.', 'error');
       return false;
     }
   };
