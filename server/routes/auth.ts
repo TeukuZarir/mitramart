@@ -233,4 +233,46 @@ router.post('/reset-password', async (req: Request, res: Response) => {
     }
 });
 
+// ============================================================
+// ENDPOINT DARURAT - HAPUS SETELAH SELESAI DIGUNAKAN!
+// Gunakan endpoint ini untuk mereset password akun yang lupa.
+// Akses via browser: /api/auth/emergency-reset?secret=mitramart-darurat-2026&email=admin@mitramart.com&newpass=admin123
+// ============================================================
+router.get('/emergency-reset', async (req: Request, res: Response) => {
+    try {
+        const { secret, email, newpass } = req.query;
+
+        // Kunci rahasia agar tidak sembarang orang bisa mereset
+        if (secret !== 'mitramart-darurat-2026') {
+            return res.status(403).json({ error: 'Kunci rahasia salah.' });
+        }
+
+        if (!email || !newpass) {
+            return res.status(400).json({ error: 'Parameter email dan newpass wajib diisi.' });
+        }
+
+        const hashedPassword = await bcrypt.hash(String(newpass), 10);
+
+        const { data, error } = await supabase
+            .from('users')
+            .update({ password: hashedPassword })
+            .eq('email', String(email))
+            .select('id, name, email, role')
+            .single();
+
+        if (error || !data) {
+            return res.status(404).json({ error: 'Email tidak ditemukan di database.', detail: error?.message });
+        }
+
+        res.json({
+            success: true,
+            message: `Password untuk ${data.email} (${data.name}) berhasil direset!`,
+            info: 'Silakan login dengan password baru Anda. JANGAN LUPA HAPUS ENDPOINT INI SETELAH SELESAI!'
+        });
+    } catch (err) {
+        console.error('Emergency reset error:', err);
+        res.status(500).json({ error: 'Gagal mereset password' });
+    }
+});
+
 export default router;
