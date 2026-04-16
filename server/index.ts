@@ -12,25 +12,24 @@ import userRoutes from './routes/users';
 validateEnvVars();
 
 // ============================================================
-// AUTO RESET PASSWORD - HAPUS BLOK INI SETELAH BERHASIL LOGIN!
-// Kode ini otomatis mereset password semua akun saat server start.
+// AUTO RESET PASSWORD - COMMENTED OUT (password sudah benar)
 // ============================================================
-(async () => {
-    try {
-        const accounts = [
-            { email: 'admin@mitramart.com', password: 'admin123' },
-            { email: 'kasir@mitramart.com', password: 'kasir123' },
-            { email: 'gudang@mitramart.com', password: 'gudang123' },
-        ];
-        for (const acc of accounts) {
-            const hash = await bcrypt.hash(acc.password, 10);
-            await supabase.from('users').update({ password: hash }).eq('email', acc.email);
-        }
-        console.log('✅ Semua password berhasil direset otomatis!');
-    } catch (err) {
-        console.error('❌ Gagal reset password otomatis:', err);
-    }
-})();
+// (async () => {
+//     try {
+//         const accounts = [
+//             { email: 'admin@mitramart.com', password: 'admin123' },
+//             { email: 'kasir@mitramart.com', password: 'kasir123' },
+//             { email: 'gudang@mitramart.com', password: 'gudang123' },
+//         ];
+//         for (const acc of accounts) {
+//             const hash = await bcrypt.hash(acc.password, 10);
+//             await supabase.from('users').update({ password: hash }).eq('email', acc.email);
+//         }
+//         console.log('✅ Semua password berhasil direset otomatis!');
+//     } catch (err) {
+//         console.error('❌ Gagal reset password otomatis:', err);
+//     }
+// })();
 // ============================================================
 
 const app = express();
