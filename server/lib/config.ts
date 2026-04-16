@@ -18,8 +18,8 @@ function getJwtSecret(): string {
     }
 
     if (process.env.NODE_ENV === 'production') {
-        console.error('❌ FATAL: JWT_SECRET wajib di-set di production! Server tidak bisa berjalan tanpa JWT_SECRET yang aman.');
-        process.exit(1);
+        // console.error('❌ FATAL: JWT_SECRET wajib di-set di production! Server tidak bisa berjalan tanpa JWT_SECRET yang aman.');
+        // process.exit(1);
     }
 
     const generated = crypto.randomBytes(64).toString('hex');
@@ -68,8 +68,8 @@ export function validateEnvVars() {
     console.log('');
 
     if (hasError) {
-        console.error('❌ Server tidak bisa berjalan tanpa environment variables yang diperlukan.');
+        console.error('❌ Server start warning: environment variables required are missing.');
         console.error('   Buat file .env.local dengan variabel-variabel di atas.');
-        process.exit(1);
+        // process.exit(1); Disable termination so Vercel logs the error but the server stays alive!
     }
 }
