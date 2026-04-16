@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
+import path from 'path';
+import fs from 'fs';
 import { validateEnvVars } from './lib/config';
 import authRoutes from './routes/auth';
 import productRoutes from './routes/products';
@@ -70,6 +72,17 @@ app.use('/api/users', userRoutes);
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'MitraMart API is running' });
 });
+
+// Serve static files from dist (Vite build output)
+const distPath = path.join(process.cwd(), '..', 'dist');
+if (fs.existsSync(distPath)) {
+    app.use(express.static(distPath, { maxAge: '1h' }));
+    
+    // SPA fallback: serve index.html for all non-API routes
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(distPath, 'index.html'));
+    });
+}
 
 if (!process.env.VERCEL) {
     app.listen(PORT, () => {
