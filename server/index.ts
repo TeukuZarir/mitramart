@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import bcrypt from 'bcryptjs';
+import path from 'path';
 import { validateEnvVars } from './lib/config';
 import { supabase } from './lib/supabase';
 import authRoutes from './routes/auth';
@@ -10,27 +11,6 @@ import salesRoutes from './routes/sales';
 import userRoutes from './routes/users';
 
 validateEnvVars();
-
-// ============================================================
-// AUTO RESET PASSWORD - COMMENTED OUT (password sudah benar)
-// ============================================================
-// (async () => {
-//     try {
-//         const accounts = [
-//             { email: 'admin@mitramart.com', password: 'admin123' },
-//             { email: 'kasir@mitramart.com', password: 'kasir123' },
-//             { email: 'gudang@mitramart.com', password: 'gudang123' },
-//         ];
-//         for (const acc of accounts) {
-//             const hash = await bcrypt.hash(acc.password, 10);
-//             await supabase.from('users').update({ password: hash }).eq('email', acc.email);
-//         }
-//         console.log('✅ Semua password berhasil direset otomatis!');
-//     } catch (err) {
-//         console.error('❌ Gagal reset password otomatis:', err);
-//     }
-// })();
-// ============================================================
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -60,6 +40,10 @@ app.use(cors({
     credentials: true
 }));
 app.use(express.json());
+
+// Serve static files dari dist folder (Vite build output)
+const distPath = path.join(process.cwd(), 'dist');
+app.use(express.static(distPath));
 
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -92,6 +76,11 @@ app.use('/api/users', userRoutes);
 
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'MitraMart API is running' });
+});
+
+// Fallback ke index.html untuk SPA routing
+app.get('*', (req, res) => {
+    res.sendFile(path.join(distPath, 'index.html'));
 });
 
 if (!process.env.VERCEL) {
