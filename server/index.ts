@@ -41,12 +41,21 @@ const allowedOrigins = [
     'http://localhost:5173',
     'https://mitramart.vercel.app'
 ];
+
+const isAllowedOrigin = (origin?: string) => {
+    if (!origin) return true;
+    if (allowedOrigins.includes(origin)) return true;
+    if (origin.endsWith('.vercel.app')) return true;
+    if (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL) return true;
+    return false;
+};
+
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
+        if (isAllowedOrigin(origin)) {
             callback(null, true);
         } else {
-            callback(new Error('Not allowed by CORS'));
+            callback(new Error(`Not allowed by CORS: ${origin}`));
         }
     },
     credentials: true
