@@ -1,10 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
-import bcrypt from 'bcryptjs';
-import path from 'path';
 import { validateEnvVars } from './lib/config';
-import { supabase } from './lib/supabase';
 import authRoutes from './routes/auth';
 import productRoutes from './routes/products';
 import salesRoutes from './routes/sales';
@@ -41,10 +38,6 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Serve static files dari dist folder (Vite build output)
-const distPath = path.join(process.cwd(), 'dist');
-app.use(express.static(distPath));
-
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 10,
@@ -76,11 +69,6 @@ app.use('/api/users', userRoutes);
 
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'MitraMart API is running' });
-});
-
-// Fallback ke index.html untuk SPA routing
-app.get('*', (req, res) => {
-    res.sendFile(path.join(distPath, 'index.html'));
 });
 
 if (!process.env.VERCEL) {
