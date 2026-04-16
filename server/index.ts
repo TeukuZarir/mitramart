@@ -74,12 +74,17 @@ app.get('/api/health', (req, res) => {
 });
 
 // Serve static files from dist (Vite build output)
-const distPath = path.join(process.cwd(), '..', 'dist');
+const distPath = path.join(process.cwd(), 'dist');
 if (fs.existsSync(distPath)) {
     app.use(express.static(distPath, { maxAge: '1h' }));
-    
-    // SPA fallback: serve index.html for all non-API routes
-    app.get('*', (req, res) => {
+
+    // SPA fallback: serve index.html only for routes that accept HTML
+    // and do not request a file (prevents serving index.html for JS/CSS assets)
+    app.get('*', (req, res, next) => {
+        // let API routes and asset files be handled elsewhere
+        if (req.path.startsWith('/api')) return next();
+        if (path.extname(req.path)) return next();
+        if (!req.accepts || !req.accepts('html')) return next();
         res.sendFile(path.join(distPath, 'index.html'));
     });
 }
